@@ -1,10 +1,11 @@
 """
-根据上一步获取的歌手的 ID 来用于获取所有的专辑 ID
+acquire album ID
 """
 import requests
 from bs4 import BeautifulSoup
-import time
-from music_163 import sql
+
+filein = open('artist')
+out = open('album','w')
 
 
 class Album(object):
@@ -20,33 +21,31 @@ class Album(object):
         'Pragma': 'no-cache',
         'Referer': 'http://music.163.com/',
         'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0(Macintosh; Intel Mac OSX 10_13) AppleWebKit/604.1.38(KHTML, likeGecko) Version/11.0 Safari/604.1.38'
     }
 
     def save_albums(self, artist_id):
-        params = {'id': artist_id, 'limit': '200'}
-        # 获取歌手个人主页
+        params = {'id': artist_id, 'limit':'200'}
+
         r = requests.get('http://music.163.com/artist/album', headers=self.headers, params=params)
 
-        # 网页解析
         soup = BeautifulSoup(r.content.decode(), 'html.parser')
         body = soup.body
 
-        albums = body.find_all('a', attrs={'class': 'tit f-thide s-fc0'})  # 获取所有专辑
+        albums = body.find_all('a', attrs={'class': 'tit s-fc0'})
 
         for album in albums:
             albume_id = album['href'].replace('/album?id=', '')
-            sql.insert_album(albume_id, artist_id)
+            #print(albume_id)
+            out.write(albume_id+" "+artist_id)
 
 
 if __name__ == '__main__':
-    artists = sql.get_all_artist()
     my_album = Album()
-    for i in artists:
-        try:
-            my_album.save_albums(i['ARTIST_ID'])
-            # print(i)
-        except Exception as e:
-            # 打印错误日志
-            print(str(i) + ': ' + str(e))
-            time.sleep(5)
+    for i in filein:
+            my_album.save_albums(i)
+            #print(i)
+
+
+filein.close()
+out.close()

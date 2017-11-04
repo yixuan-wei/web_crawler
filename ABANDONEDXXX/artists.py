@@ -1,9 +1,10 @@
 """
-获取所有的歌手信息
+acquire singers' info
 """
 import requests
 from bs4 import BeautifulSoup
-from music_163 import sql
+
+out = open('artist','w')
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -25,34 +26,21 @@ def save_artist(group_id, initial):
     params = {'id': group_id, 'initial': initial}
     r = requests.get('http://music.163.com/discover/artist/cat', params=params)
 
-    # 网页解析
-    soup = BeautifulSoup(r.content.decode(), 'html.parser')
+    soup=BeautifulSoup(r.content.decode('utf-8'),'html.parser')
     body = soup.body
 
-    hot_artists = body.find_all('a', attrs={'class': 'msk'})
     artists = body.find_all('a', attrs={'class': 'nm nm-icn f-thide s-fc0'})
-
-    for artist in hot_artists:
-        artist_id = artist['href'].replace('/artist?id=', '').strip()
-        artist_name = artist['title'].replace('的音乐', '')
-        try:
-            sql.insert_artist(artist_id, artist_name)
-        except Exception as e:
-            # 打印错误日志
-            print(e)
 
     for artist in artists:
         artist_id = artist['href'].replace('/artist?id=', '').strip()
-        artist_name = artist['title'].replace('的音乐', '')
-        try:
-            sql.insert_artist(artist_id, artist_name)
-        except Exception as e:
-            # 打印错误日志
-            print(e)
+        out.write(artist_id+"\n")
 
 
-gg = 4003
-
-save_artist(gg, 0)
+gg = [2001,2002,2003]
+for i in range(0,3):
+    save_artist(gg[i], 0)
 for i in range(65, 91):
-    save_artist(gg, i)
+    for j in range(0,3):
+        save_artist(gg[j], i)
+
+out.close()

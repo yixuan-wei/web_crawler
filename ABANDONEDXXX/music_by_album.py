@@ -1,11 +1,12 @@
 """
-根据专辑 ID 获取到所有的音乐 ID
+aquire music ID
 """
 import requests
 from bs4 import BeautifulSoup
 import time
-from music_163 import sql
 
+filein = open('album')
+out = open('music', 'w')
 
 class Music(object):
     headers = {
@@ -20,35 +21,32 @@ class Music(object):
         'Pragma': 'no-cache',
         'Referer': 'http://music.163.com/',
         'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.143 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0(Macintosh; Intel Mac OSX 10_13) AppleWebKit/604.1.38(KHTML, likeGecko) Version/11.0 Safari/604.1.38'
     }
 
     def save_music(self, album_id):
         params = {'id': album_id}
-        # 获取专辑对应的页面
+
         r = requests.get('http://music.163.com/album', headers=self.headers, params=params)
 
-        # 网页解析
         soup = BeautifulSoup(r.content.decode(), 'html.parser')
         body = soup.body
 
-        musics = body.find('ul', attrs={'class': 'f-hide'}).find_all('li')  # 获取专辑的所有音乐
+        musics = body.find('ul', attrs={'class': 'f-hide'}).find_all('li')
 
         for music in musics:
             music = music.find('a')
             music_id = music['href'].replace('/song?id=', '')
             music_name = music.getText()
-            sql.insert_music(music_id, music_name, album_id)
+            out.write(music_id+" "+music_name+"\n")
+            #sql.insert_music(music_id, music_name, album_id)
 
 
 if __name__ == '__main__':
-    albums = sql.get_all_album()
     my_music = Music()
-    for i in albums:
-        try:
-            my_music.save_music(i['ALBUM_ID'])
-            # print(i)
-        except Exception as e:
-            # 打印错误日志
-            print(str(i) + ': ' + str(e))
-            time.sleep(5)
+    for i in filein:
+            album_id = i.split()
+            my_music.save_music(album_id[0])
+
+
+out.close()
