@@ -7,7 +7,7 @@ import requests.adapters
 from bs4 import BeautifulSoup
 import bs4
 
-out = open('data','w')
+out = open('data', 'w')
 requests.adapters.DEFAULT_RETRIES = 5
 headers = {
     'Host': 'www.azlyrics.com',
@@ -33,7 +33,7 @@ class Lyrics(object):
     authen = ('5226dc5a-e3b4-4ab8-b060-b1912ce05c54', 'Jrz1z5OuFVTj')
 
     def save_lyrics(self, song_name):
-        r = requests.get('https://www.azlyrics.com/lyrics/' + song_name , headers=headers,params={'limit':'100'})
+        r = requests.get('https://www.azlyrics.com/lyrics/' + song_name, headers=headers, params={'limit': '100'})
         soup = BeautifulSoup(r.content.decode('utf-8'), 'html.parser')
         body = soup.body
         song_names = body.find('div', attrs={'class': 'ringtone'}).next_sibling.next_sibling
@@ -49,7 +49,7 @@ class Lyrics(object):
 
 
 def save_artists(letter_id):
-    r = requests.get('https://www.azlyrics.com/' + letter_id + '.html', headers=headers,params={'limit':'100'})
+    r = requests.get('https://www.azlyrics.com/' + letter_id + '.html', headers=headers, params={'limit': '100'})
     soup = BeautifulSoup(r.content.decode('utf-8'), 'html.parser')
     body = soup.body
     artists_names = body.find('div', attrs={'class': 'col-sm-6 text-center artist-col'}).descendants
@@ -57,23 +57,22 @@ def save_artists(letter_id):
     for artist_name in artists_names:
         if type(artist_name) == bs4.element.Tag:
             if artist_name.name == 'a':
-                artist_url.append(artist_name['href'])
+                artist_url.append("'"+artist_name['href']+"'")
     return artist_url
 
 
 def find_song_name(artist_url):
-    r = requests.get('https://www.azlyrics.com/' + artist_url, headers=headers,params={'limit':'100'})
+    r = requests.get('https://www.azlyrics.com/' + artist_url, headers=headers, params={'limit': '100'})
     soup = BeautifulSoup(r.content.decode('utf-8'), 'html.parser')
     body = soup.body
-    songs_names = body.find_all('a', attrs={'target':"_blank"})
-    song_names=[]
+    songs_names = body.find_all('a', attrs={'target': "_blank"})
+    song_names = []
     for piece in songs_names:
         result = piece['href']
         name = piece.children
         print(name)
-        song_names.append([result[10:],name])
+        song_names.append([result[10:], name])
     return song_names
-
 
 
 if __name__ == '__main__':
@@ -82,16 +81,16 @@ if __name__ == '__main__':
     artist_url.append(save_artists('19'))
     for i in range(ord('a'), ord('z') + 1):
         id = chr(i)
-        artist_url=artist_url+save_artists(id)
+        artist_url = artist_url + save_artists(id)
     for i in artist_url:
-        song_names=[]
-        song_names=find_song_name(i)
+        song_names = []
+        song_names = find_song_name(i)
         my_lyric = Lyrics()
 
         for j in song_names:
             lyric = []
             tone = []
-            lyric,tone=my_lyric.save_lyrics(j[0])
-            out.write('['+j[1]+", ["+",".join(tone)+"], "+lyric+']')
+            lyric, tone = my_lyric.save_lyrics(j[0])
+            out.write('[' + j[1] + ", [" + ",".join(tone) + "], " + lyric + ']')
     out.write("}")
     out.close()
