@@ -13,4 +13,6 @@ Found another non-active lyric sites: www.azlyrics.com on the web, trying to att
 
 But IP has already been constrained before I debugged completely.
 
-An unfinished program.
+This web crapper is An unfinished program.
+
+The following steps, including analyzing lyric tunes and matching input text with songs, are in the other reporsitory: sentiment_analysis https://github.com/yixuan-wei/sentiment-analysis.git
